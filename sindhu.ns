@@ -1,0 +1,131 @@
+#------------------------------------------------------- 
+# This ns script has been created by the nam editor.
+# If you edit it manually, the nam editor might not
+# be able to open it properly in the future.
+#
+# EDITING BY HAND IS AT YOUR OWN RISK!
+#------------------------------------------------------- 
+# Create a new simulator object.
+set ns [new Simulator]
+# Create a nam trace datafile.
+set namfile [open /home/cp/sindhu.nam w]
+$ns namtrace-all $namfile
+
+# Create wired nodes.
+set node(3) [$ns node]
+## node(3) at 519.964966,581.647217
+$node(3) set X_ 519.964966
+$node(3) set Y_ 581.647217
+$node(3) set Z_ 0.0
+$node(3) color "black"
+
+set node(2) [$ns node]
+## node(2) at 442.862152,560.315430
+$node(2) set X_ 442.862152
+$node(2) set Y_ 560.315430
+$node(2) set Z_ 0.0
+$node(2) color "black"
+
+set node(1) [$ns node]
+## node(1) at 462.908905,610.689270
+$node(1) set X_ 462.908905
+$node(1) set Y_ 610.689270
+$node(1) set Z_ 0.0
+$node(1) color "black"
+
+
+# Create links between nodes.
+$ns simplex-link $node(3) $node(1) 1.000000Mb 20.000000ms DropTail
+$ns simplex-link-op $node(3) $node(1) queuePos 0.5
+$ns simplex-link-op $node(3) $node(1) color black
+$ns simplex-link-op $node(3) $node(1) orient 153.0deg
+# Set Queue Properties for link 3->1
+[[$ns link $node(3) $node(1)] queue] set limit_ 20
+
+$ns simplex-link $node(3) $node(2) 1.000000Mb 20.000000ms DropTail
+$ns simplex-link-op $node(3) $node(2) queuePos 0.5
+$ns simplex-link-op $node(3) $node(2) color black
+$ns simplex-link-op $node(3) $node(2) orient 195.5deg
+# Set Queue Properties for link 3->2
+[[$ns link $node(3) $node(2)] queue] set limit_ 20
+
+$ns simplex-link $node(2) $node(3) 1.000000Mb 20.000000ms DropTail
+$ns simplex-link-op $node(2) $node(3) queuePos 0.5
+$ns simplex-link-op $node(2) $node(3) color black
+$ns simplex-link-op $node(2) $node(3) orient 15.5deg
+# Set Queue Properties for link 2->3
+[[$ns link $node(2) $node(3)] queue] set limit_ 20
+
+$ns simplex-link $node(2) $node(1) 1.000000Mb 20.000000ms DropTail
+$ns simplex-link-op $node(2) $node(1) queuePos 0.5
+$ns simplex-link-op $node(2) $node(1) color black
+$ns simplex-link-op $node(2) $node(1) orient 68.3deg
+# Set Queue Properties for link 2->1
+[[$ns link $node(2) $node(1)] queue] set limit_ 20
+
+$ns simplex-link $node(1) $node(3) 1.000000Mb 20.000000ms DropTail
+$ns simplex-link-op $node(1) $node(3) queuePos 0.5
+$ns simplex-link-op $node(1) $node(3) color black
+$ns simplex-link-op $node(1) $node(3) orient 333.0deg
+# Set Queue Properties for link 1->3
+[[$ns link $node(1) $node(3)] queue] set limit_ 20
+
+$ns simplex-link $node(1) $node(2) 1.000000Mb 20.000000ms DropTail
+$ns simplex-link-op $node(1) $node(2) queuePos 0.5
+$ns simplex-link-op $node(1) $node(2) color black
+$ns simplex-link-op $node(1) $node(2) orient 248.3deg
+# Set Queue Properties for link 1->2
+[[$ns link $node(1) $node(2)] queue] set limit_ 20
+
+# Add Link Loss Models
+
+# Create agents.
+set agent(14) [new Agent/TCPSink/Sack1]
+$ns attach-agent $node(3) $agent(14)
+set agent(15) [new Agent/TCPSink/Sack1]
+$ns attach-agent $node(2) $agent(15)
+set agent(16) [new Agent/TCP/Sack1]
+$ns attach-agent $node(1) $agent(16)
+
+$ns color 16 "black"
+$agent(16) set fid_ 16
+$agent(16) set packetSize_ 210
+set agent(13) [new Agent/TCPSink/Sack1]
+$ns attach-agent $node(1) $agent(13)
+set agent(12) [new Agent/TCP]
+$ns attach-agent $node(1) $agent(12)
+
+$ns color 12 "black"
+$agent(12) set fid_ 12
+$agent(12) set packetSize_ 210
+$agent(12) set window_ 20
+$agent(12) set windowInit_ 1
+$agent(12) set maxcwnd_ 0
+
+# Create traffic sources and add them to the agent.
+set traffic_source(2) [new Application/FTP]
+$traffic_source(2) attach-agent $agent(12)
+$traffic_source(2) set maxpkts_ 256
+
+# Connect agents.
+$ns connect $agent(16) $agent(15)
+
+
+# Traffic Source actions.
+$ns connect $agent(12) $agent(14)
+
+
+# Traffic Source actions.
+$ns at 0.000000 "$traffic_source(2) start"
+$ns at 60.000000 "$traffic_source(2) stop"
+
+# Run the simulation
+proc finish {} {
+	global ns namfile
+	$ns flush-trace
+	close $namfile
+	exec nam -r 2000.000000us /home/cp/sindhu.nam &	
+	exit 0
+	}
+$ns at 60.000000 "finish"
+$ns run
